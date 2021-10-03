@@ -7,6 +7,7 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import DesktopDatePicker from "@mui/lab/DesktopDatePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ItineraryTable from "./component/ItineraryTable";
+import SaveLoadDialogButton from "./component/SaveLoadDialogButton";
 
 
 function App() {
@@ -43,21 +44,48 @@ function App() {
     }
   };
 
+  const compareMaps = (map1, map2) => {
+    if(map1.cityName === map2.cityName && map1.tripDate === map2.tripDate){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+
+  const isRecordNew = (recordArray, object) =>{
+    if(recordArray.length == 0){
+      return true;
+    }
+    var flag = true;
+    recordArray.forEach((each) =>{
+      if(compareMaps(each, object)) flag = false;
+    });
+    return flag;
+  }
+
   const addTableItem = (cityName, date) => {
     const dateStr = format(date, "yyyy-MM-dd");
     const url = `http://localhost:8080/itinerary/weather?city=${cityName}&date=${dateStr}`;
 
-    setItineraryRecord([
-      ...itineraryRecord,
-      {
-        cityName: cityName,
-        queryDate: dateStr,
-      },
-    ]);
+    let tripStop = {
+      cityName: cityName,
+      tripDate: dateStr,
+    }
+
+    if(!isRecordNew(itineraryRecord,tripStop )){
+        return;
+    }
+  
     fetch(url)
-      .then((response) => response.json())
+      .then((response) => {
+        console.log(response);
+        if(response.ok) {   
+          return response.json();   
+        } else {      
+          throw Error(`Request rejected with status ${response.status}.`);  
+       }})
       .then((response) =>{
-        console.log(response.length);
         if (response.length === 0) {
           setTableItems([
             ...tableItems,
@@ -101,6 +129,46 @@ function App() {
       .catch((error) => {
         console.error("error", error);
       });
+
+      //add city name and trip date into itineraryRecord for plan save/load
+      setItineraryRecord([
+        ...itineraryRecord,
+        tripStop,
+      ]);
+      console.log(itineraryRecord);
+  };
+
+  const createItineraryCallback = (newItineraryName) => {
+    console.log("createItineraryCallback: ", newItineraryName);
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        planName: newItineraryName,
+        tripStopEntities: itineraryRecord
+      }),
+    };
+    console.log('requestOptions: ', requestOptions); 
+    fetch("http://localhost:8080/itinerary/plan/add", requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+      }) 
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  const loadItineraryCallback = (oldItineraryName) => {
+    console.log("loadItineraryCallback: ", oldItineraryName);
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "React POST Request Example" }),
+    };
+    // const response = await fetch("https://reqres.in/api/posts", requestOptions);
+    // const data = await response.json();
+    // this.setState({ postId: data.id });
   };
 
   const setFilterCallback = (e) => {
@@ -147,6 +215,10 @@ function App() {
         >
           Submit
         </Button>
+        <SaveLoadDialogButton
+          createItineraryCallback={createItineraryCallback}
+          loadItineraryCallback={loadItineraryCallback}
+        />
         </div>
         <div className="CP-TableViewContainer">
         <ItineraryTable

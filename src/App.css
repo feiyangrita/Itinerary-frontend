@@ -18,6 +18,13 @@ div.CP-MainContainer > div.CP-TopToolContainer > div.CP-l-textfield {
 	margin: auto;
 }
 
+div.CP-MainContainer > div.CP-TopToolContainer > div.CP-l-datepicker {
+	width: auto;
+	min-width: 140px;
+	max-width: 180px;
+	margin: auto;
+}
+
 div.CP-MainContainer > div.CP-TopToolContainer > button {
 	padding: 3px 6px 3px 6px;
 	color: black;
@@ -31,4 +38,18 @@ div.CP-MainContainer > div.CP-TopToolContainer > button.CP-l-submitButton {
 	font-weight: 600;
 	padding-left: 5px;
 	padding-right: 5px;
+}
+
+div.CP-MainContainer > div.CP-TableViewContainer {
+	width: 95%;
+	margin: auto;
+	padding-top: 20px;
+}
+
+div.CP-MainContainer > div.CP-TableViewContainer > div.CP-l-TableContainer {
+	padding-top: 20px;
+}
+
+div.CP-MainContainer > div.CP-TableViewContainer > div.CP-l-TableContainer th.MuiTableCell-head {
+	font-weight: 600;
 }

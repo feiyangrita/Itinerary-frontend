@@ -8,6 +8,7 @@ import DesktopDatePicker from "@mui/lab/DesktopDatePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import ItineraryTable from "./component/ItineraryTable";
 import SaveLoadDialogButton from "./component/SaveLoadDialogButton";
+import PopoverButton from "./component/PopoverButton";
 
 
 function App() {
@@ -23,6 +24,18 @@ function App() {
   
   const dateChangeListener = (date) => {
     setSelectedDate(date);
+  };
+
+  const resetButtonClick = (e) => {
+    setSelectedDate(new Date());
+    setSelectedCity("");
+    setTableItems([]);
+    setSelectedItems([]);
+    setItineraryRecord([]);
+    setCityTextField({
+      error: false,
+      helperText: "",
+    });
   };
 
   const cityChangeListener = (e) => {
@@ -76,15 +89,15 @@ function App() {
     if(!isRecordNew(itineraryRecord,tripStop )){
         return;
     }
+
+    //add city name and trip date into itineraryRecord for plan save/load
+    setItineraryRecord([
+      ...itineraryRecord,
+      tripStop,
+    ]);
   
     fetch(url)
-      .then((response) => {
-        console.log(response);
-        if(response.ok) {   
-          return response.json();   
-        } else {      
-          throw Error(`Request rejected with status ${response.status}.`);  
-       }})
+      .then((response) => response.json())
       .then((response) =>{
         if (response.length === 0) {
           setTableItems([
@@ -128,14 +141,19 @@ function App() {
       })
       .catch((error) => {
         console.error("error", error);
+        setTableItems([
+          ...tableItems,
+          {
+            city: cityName,
+            country: "None",
+            temperature: "None",
+            cloud: "None",
+            dateStr: dateStr,
+          },
+        ]);
       });
 
-      //add city name and trip date into itineraryRecord for plan save/load
-      setItineraryRecord([
-        ...itineraryRecord,
-        tripStop,
-      ]);
-      console.log(itineraryRecord);
+    
   };
 
   const createItineraryCallback = (newItineraryName) => {
@@ -159,16 +177,39 @@ function App() {
       });
   };
 
-  const loadItineraryCallback = (oldItineraryName) => {
-    console.log("loadItineraryCallback: ", oldItineraryName);
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "React POST Request Example" }),
-    };
-    // const response = await fetch("https://reqres.in/api/posts", requestOptions);
-    // const data = await response.json();
-    // this.setState({ postId: data.id });
+  const loadItineraryCallback = (planId) => {
+    console.log("loadItineraryCallback: ", planId);
+    fetch(`http://localhost:8080/itinerary/plan/list/${planId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        const existingTableItems = [];
+        data.forEach((v) => {
+          if (v.weatherEntities.length === 0) {
+            existingTableItems.push({
+              city: v.cityName,
+              country: v.country,
+              temperature: "None",
+              cloud: "None",
+              dateStr: v.displayTripDate,
+            });
+          } else {
+            v.weatherEntities.forEach((w) => {
+              existingTableItems.push({
+                city: v.cityName,
+                country: v.country,
+                temperature: w.temperature,
+                cloud: w.cloud,
+                dateStr: w.displayTime,
+              });
+            })
+          }
+        });
+        console.log(existingTableItems);
+        setTableItems([...existingTableItems]);
+      }) 
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   const setFilterCallback = (e) => {
@@ -219,6 +260,18 @@ function App() {
           createItineraryCallback={createItineraryCallback}
           loadItineraryCallback={loadItineraryCallback}
         />
+        <PopoverButton
+          buttonText="Generate Summary"
+          popoutText="I am a good popout. Please take an umbralla. Please take a coat. I am a good popout. Please take an umbralla. Please take a coat"
+        />
+        <Button
+          className="CP-l-resetButton"
+          size="large"
+          variant="contained"
+          onClick={resetButtonClick}
+        >
+          Reset
+        </Button>
         </div>
         <div className="CP-TableViewContainer">
         <ItineraryTable

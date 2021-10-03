@@ -15,11 +15,11 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import AddIcon from '@mui/icons-material/Add';
 import { blue } from '@mui/material/colors';
 
-const itineraryNames = ['itinerary1', 'itinerary2'];
+// const itineraryNames = ['itinerary1', 'itinerary2'];
 
 const SimpleDialog = (props) => {
    const [itineraryName, setItineraryName] = useState('');
-   const { open, setOpen, createItinerary, loadItinerary} = props;
+   const { open, setOpen, itineraryArray, createItinerary, loadItinerary} = props;
 
    const handleLoadItinerary = (value) => { 
       loadItinerary(value);
@@ -44,15 +44,15 @@ const SimpleDialog = (props) => {
       <Dialog open={open} onClose={onClose}>
          <DialogTitle>Save/Load Itinerary</DialogTitle>
          <List sx={{ pt: 0 }}>
-            {itineraryNames.map((iName) => (
-               <Tooltip title='Click to load saved itinerary' placement='top' key={iName}>
-               <ListItem button onClick={() => handleLoadItinerary(iName)} key={iName}>
+            {itineraryArray.map((oPlan) => (
+               <Tooltip title='Click to load saved itinerary' placement='top' key={oPlan.id}>
+               <ListItem button onClick={() => handleLoadItinerary(oPlan.id)} key={oPlan.id}>
                   <ListItemAvatar>
                      <Avatar sx={{ bgcolor: blue[100], color: blue[600], fontSize: 16, height: 30, width: 30, ml: 1 }}>
                         <CloudDownloadIcon />
                      </Avatar>
                   </ListItemAvatar>
-                  <ListItemText primary={iName} />
+                  <ListItemText primary={oPlan.planName} />
                </ListItem>
                </Tooltip>
             ))}
@@ -81,8 +81,24 @@ SimpleDialog.propTypes = {
 const SaveLoadDialogButton = (props) => {
    const {createItineraryCallback, loadItineraryCallback} = props;
    const [open, setOpen] = useState(false);
+   const [itineraryArray, setItineraryArray] = useState([]);
 
    const handleClickOpen = () => {
+      fetch(`http://localhost:8080/itinerary/plan/list`)
+      .then((response) => response.json())
+      .then((response) =>{
+         const existingItineraryArray = [];
+         response.forEach((v) => {
+            existingItineraryArray.push({
+               id:v.id,
+               planName:v.planName
+            });
+         });
+         setItineraryArray(existingItineraryArray);
+      })
+      .catch((error) => {
+        console.error("error", error);
+      });
       setOpen(true);
    }
 
@@ -96,6 +112,7 @@ const SaveLoadDialogButton = (props) => {
             setOpen={setOpen}
             createItinerary={createItineraryCallback}
             loadItinerary={loadItineraryCallback}
+            itineraryArray={itineraryArray}
          />
       </React.Fragment>
    );

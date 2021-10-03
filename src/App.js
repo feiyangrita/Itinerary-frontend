@@ -10,6 +10,8 @@ import ItineraryTable from "./component/ItineraryTable";
 import SaveLoadDialogButton from "./component/SaveLoadDialogButton";
 import PopoverButton from "./component/PopoverButton";
 
+import { BASE_URL } from './utils/url'
+
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -79,7 +81,6 @@ function App() {
 
   const addTableItem = (cityName, date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const url = `http://localhost:8080/itinerary/weather?city=${cityName}&date=${dateStr}`;
 
     let tripStop = {
       cityName: cityName,
@@ -96,7 +97,7 @@ function App() {
       tripStop,
     ]);
   
-    fetch(url)
+    fetch(`${BASE_URL}/itinerary/weather?city=${cityName}&date=${dateStr}`)
       .then((response) => response.json())
       .then((response) =>{
         if (response.length === 0) {
@@ -152,8 +153,6 @@ function App() {
           },
         ]);
       });
-
-    
   };
 
   const createItineraryCallback = (newItineraryName) => {
@@ -167,7 +166,7 @@ function App() {
       }),
     };
     console.log('requestOptions: ', requestOptions); 
-    fetch("http://localhost:8080/itinerary/plan/add", requestOptions)
+    fetch(`${BASE_URL}/itinerary/plan/add`, requestOptions)
       .then((response) => response.json())
       .then((data) => {
         console.log("Success:", data);
@@ -179,7 +178,7 @@ function App() {
 
   const loadItineraryCallback = (planId) => {
     console.log("loadItineraryCallback: ", planId);
-    fetch(`http://localhost:8080/itinerary/plan/list/${planId}`)
+    fetch(`${BASE_URL}/itinerary/plan/list/${planId}`)
       .then((response) => response.json())
       .then((data) => {
         const existingTableItems = [];
@@ -224,7 +223,30 @@ function App() {
     setSelectedItems(typeof value === "string" ? value.split(",") : value);
   };
 
+  const generateSummary = ()=>{
+    let lowTemp = false;
+    let rain = false;
+    tableItems
+    .filter((v) => selectedItems.length === 0 || selectedItems.indexOf(v.city + '_' + v.country) >= 0)
+    .forEach((v) => {
+      if(v.temperature < 10) {
+        lowTemp = true;
+      }
+      if(v.cloud > 90) {
+        rain = true;
+      }
+    });
 
+    let summary = "";
+    if(lowTemp) 
+      summary = "Please take a coat. ";
+    if(rain)
+      summary = summary + "Please take an umbrella. "
+    if(summary === "")
+      return "Everything is fine.";
+    return summary;
+  }
+  
   return (
     <div className="CP-MainContainer">
       <h1 className="CP-AppHeader">Travel Planner</h1>
@@ -269,7 +291,7 @@ function App() {
         />
         <PopoverButton
           buttonText="Generate Summary"
-          popoutText="I am a good popout. Please take an umbralla. Please take a coat. I am a good popout. Please take an umbralla. Please take a coat"
+          popoutText={generateSummary()}
         />
         <Button
           className="CP-l-resetButton"

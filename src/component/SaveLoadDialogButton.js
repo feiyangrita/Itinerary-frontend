@@ -15,6 +15,8 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import AddIcon from '@mui/icons-material/Add';
 import { blue } from '@mui/material/colors';
 
+import { BASE_URL } from '../utils/url'
+
 // const itineraryNames = ['itinerary1', 'itinerary2'];
 
 const SimpleDialog = (props) => {
@@ -84,7 +86,7 @@ const SaveLoadDialogButton = (props) => {
    const [itineraryArray, setItineraryArray] = useState([]);
 
    const handleClickOpen = () => {
-      fetch(`http://localhost:8080/itinerary/plan/list`)
+      fetch(`${BASE_URL}/itinerary/plan/list`)
       .then((response) => response.json())
       .then((response) =>{
          const existingItineraryArray = [];

@@ -9,6 +9,14 @@ const ItineraryTable = (props) => {
 
    return (
       <React.Fragment>
+         <div className='CP-l-FilterButtonContainer'>
+            <StyledEngineProvider injectFirst>
+               <MultiSelector tableItems={tableItems
+                  .map((item) => item.city + '_' + item.country)
+                  .filter((value, index, self) => self.indexOf(value) === index)}
+                  filterItems={selectedItems} setFilterCallback={setFilterCallback} />
+            </StyledEngineProvider>
+         </div>
          <div className='CP-l-TableContainer'>
             <TableContainer component={Paper}>
                <Table aria-label="Itinerary Table">

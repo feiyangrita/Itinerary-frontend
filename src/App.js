@@ -183,11 +183,17 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         const existingTableItems = [];
+        const existingItineraryRecord = [];
         data.forEach((v) => {
-          if (v.weatherEntities.length === 0) {
+          existingItineraryRecord.push(
+            {
+              cityName: v.cityName,
+              tripDate: v.displayTripDate
+            });
+          if (v.weatherEntities == null || v.weatherEntities.length === 0) {
             existingTableItems.push({
               city: v.cityName,
-              country: v.country,
+              country: v.country==null? "None": v.country,
               temperature: "None",
               cloud: "None",
               dateStr: v.displayTripDate,
@@ -205,7 +211,8 @@ function App() {
           }
         });
         console.log(existingTableItems);
-        setTableItems([...existingTableItems]);
+        setTableItems(existingTableItems);
+        setItineraryRecord(existingItineraryRecord);
       }) 
       .catch((error) => {
         console.error("Error:", error);

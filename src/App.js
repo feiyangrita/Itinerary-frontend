@@ -102,7 +102,6 @@ function App() {
       .then((response) =>{
         if (response.length === 0) {
           setTableItems([
-            ...tableItems,
             {
               city: cityName,
               country: "None",
@@ -110,12 +109,12 @@ function App() {
               cloud: "None",
               dateStr: dateStr,
             },
+            ...tableItems,
           ]);
         } else {
           response.forEach((v) => {
             if (v.weatherEntities.length === 0) {
               setTableItems([
-                ...tableItems,
                 {
                   city: v.cityName,
                   country: v.country,
@@ -123,6 +122,7 @@ function App() {
                   cloud: "None",
                   dateStr: dateStr,
                 },
+                ...tableItems,
               ]);
             } else {
               const newTableItems = [];
@@ -135,7 +135,7 @@ function App() {
                   dateStr: w.displayTime,
                 });
               });
-              setTableItems([...tableItems, ...newTableItems]);
+              setTableItems([...newTableItems,...tableItems]);
             }
           });
         }
@@ -143,7 +143,6 @@ function App() {
       .catch((error) => {
         console.error("error", error);
         setTableItems([
-          ...tableItems,
           {
             city: cityName,
             country: "None",
@@ -151,6 +150,7 @@ function App() {
             cloud: "None",
             dateStr: dateStr,
           },
+          ...tableItems,
         ]);
       });
   };
